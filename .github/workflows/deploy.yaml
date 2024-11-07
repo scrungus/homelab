@@ -33,8 +33,16 @@ jobs:
           
       - name: Reload systemd daemon
         run: |
-          sudo -S systemctl daemon-reload
+          sudo systemctl daemon-reload
           
       - name: Restart Plex container
         run: |
-          sudo -S systemctl restart plex.container
+          sudo systemctl restart plex.service
+      
+      - name: Check containers are active
+        run: |
+          sudo systemctl is-active plex.service
+      
+      - name: Output list of running containers
+        run: | 
+          sudo podman ps
