@@ -20,7 +20,7 @@ jobs:
         run: |
           CONTAINERS=$(find ./containers -name "*.container" -exec basename {} .container \; | jq -R -s -c 'split("\n")[:-1]|@json') 
           echo "containers=${CONTAINERS:1:-1}" >> $GITHUB_OUTPUT
-          echo $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
           echo "Found containers: $CONTAINERS"
 
   deploy:
