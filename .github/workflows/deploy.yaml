@@ -47,7 +47,7 @@ jobs:
       
       - name: Deploy ${{ matrix.container }} container
         env:
-          PLEX_UID: ${{ steps.get-uid.outputs.uid }}
+          USER_ID: ${{ steps.get-uid.outputs.uid }}
         run: |
           # Template and deploy configuration
           envsubst < "./containers/${{ matrix.container }}.container" | sudo tee "/etc/containers/systemd/${{ matrix.container }}.container"
