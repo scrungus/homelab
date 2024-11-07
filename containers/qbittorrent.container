@@ -1,0 +1,17 @@
+[Container]
+Image=lscr.io/linuxserver/qbittorrent:latest
+ContainerName=qbittorrent
+Network=host
+Environment=PUID=${USER_ID}
+Environment=PGID=${USER_ID}
+Environment=TZ=Etc/UTC
+Environment=WEBUI_PORT=8080
+Environment=TORRENTING_PORT=6881
+Volume=/appdata/qbittorrent:/config
+Volume=/tank/torrents:/downloads
+
+[Install]
+WantedBy=multi-user.target default.target
+
+[Service]
+Restart=unless-stopped
