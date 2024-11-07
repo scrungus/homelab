@@ -1,0 +1,45 @@
+name: Deploy Plex Container
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+       name: Ensure packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y $(cat ./packages)
+        
+      - name: Get user ID
+        id: get-uid
+        run: |
+          USER_ID=$(id -u {{ secrets.SYSTEM_USER }})
+          echo "uid=$USER_ID" >> $GITHUB_OUTPUT
+          
+      - name: Install envsubst
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+          
+      - name: Template and deploy configuration
+        env:
+          PLEX_UID: ${{ steps.get-uid.outputs.uid }}
+        run: |
+          envsubst < ./containers/plex.container.template | sudo tee /etc/containers/systemd/plex.container
+          
+      - name: Reload systemd daemon
+        run: |
+          sudo -S systemctl daemon-reload
+          
+      - name: Restart Plex container
+        run: |
+          sudo -S systemctl restart plex.container
