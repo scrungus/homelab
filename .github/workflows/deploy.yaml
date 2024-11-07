@@ -22,13 +22,8 @@ jobs:
       - name: Get user ID
         id: get-uid
         run: |
-          USER_ID=$(id -u {{ secrets.SYSTEM_USER }})
+          USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
           echo "uid=$USER_ID" >> $GITHUB_OUTPUT
-          
-      - name: Install envsubst
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext-base
           
       - name: Template and deploy configuration
         env:
