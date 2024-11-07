@@ -20,15 +20,8 @@ jobs:
         run: |
           CONTAINERS=$(find ./containers -name "*.container" -exec basename {} .container \; | jq -R -s -c 'split("\n")[:-1]')
           echo "containers=$CONTAINERS" >> "$GITHUB_OUTPUT"
-          cat $GITHUB_OUTPUT
           echo "Found containers: $CONTAINERS"
-  test: 
-    runs-on: self-hosted
-    needs: discover
-    steps:
-      - name: output
-        run: | 
-          echo ${{ needs.discover.outputs.containers }}
+
   deploy:
     runs-on: self-hosted
     needs: discover
