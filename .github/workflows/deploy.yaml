@@ -7,8 +7,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  discover:
+    runs-on: self-hosted
+    outputs:
+      containers: ${{ steps.set-matrix.outputs.containers }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Find container definitions
+        id: set-matrix
+        run: |
+          CONTAINERS=$(find ./containers -name "*.container" -exec basename {} .container \; | jq -R -s -c 'split("\n")[:-1]')
+          echo "containers=$CONTAINERS" >> $GITHUB_OUTPUT
+          echo "Found containers: $CONTAINERS"
+
   deploy:
     runs-on: self-hosted
+    strategy:
+      matrix:
+        container: ${{ fromJson(needs.discover.outputs.containers) }}
+      fail-fast: false
     
     steps:
       - name: Checkout code
@@ -24,24 +43,25 @@ jobs:
         run: |
           USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
           echo "uid=$USER_ID" >> $GITHUB_OUTPUT
-          
-      - name: Template and deploy configuration
+      
+      - name: Deploy ${{ matrix.container }} container
         env:
           PLEX_UID: ${{ steps.get-uid.outputs.uid }}
         run: |
-          envsubst < ./containers/plex.container | sudo tee /etc/containers/systemd/plex.container
+          # Template and deploy configuration
+          envsubst < "./containers/${{ matrix.container }}.container" | sudo tee "/etc/containers/systemd/${{ matrix.container }}.container"
           
       - name: Reload systemd daemon
         run: |
           sudo systemctl daemon-reload
           
-      - name: Restart Plex container
+      - name: Restart ${{ matrix.container }} container
         run: |
-          sudo systemctl restart plex.service
+          sudo systemctl restart ${{ matrix.container }}.service
       
       - name: Check containers are active
         run: |
-          sudo systemctl is-active plex.service
+          sudo systemctl is-active ${{ matrix.container }}.service
       
       - name: Output list of running containers
         run: | 
