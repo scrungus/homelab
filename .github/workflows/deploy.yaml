@@ -18,7 +18,7 @@ jobs:
       - name: Find container definitions
         id: set-matrix
         run: |
-          CONTAINERS=$(find ./containers -name "*.container" -exec basename {} .container \; | jq -R -s -c 'split("\n")[:-1]')
+          CONTAINERS=$(find ./containers -name "*.container" -exec basename {} .container \; | jq -R -s -c 'split("\n")[:-1]|tojson')
           echo "containers=$CONTAINERS" >> $GITHUB_OUTPUT
           echo "Found containers: $CONTAINERS"
 
@@ -35,7 +35,7 @@ jobs:
       
       - name: Ensure packages
         run: |
-          sudo apt-get update
+          sudo apt-get update 
           sudo apt-get install -y $(cat ./packages)
         
       - name: Get user ID
