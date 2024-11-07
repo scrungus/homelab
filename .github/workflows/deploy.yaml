@@ -22,7 +22,12 @@ jobs:
           echo "containers=$CONTAINERS" >> "$GITHUB_OUTPUT"
           cat $GITHUB_OUTPUT
           echo "Found containers: $CONTAINERS"
-
+  test: 
+    runs-on: self-hosted
+    steps:
+      - name: output
+        run: | 
+          echo ${{ needs.setup.outputs.containers }}
   deploy:
     runs-on: self-hosted
     strategy:
