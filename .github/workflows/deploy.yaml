@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-       name: Ensure packages
+      - name: Ensure packages
         run: |
           sudo apt-get update
           sudo apt-get install -y $(cat ./packages)
