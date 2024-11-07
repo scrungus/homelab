@@ -8,12 +8,12 @@ Environment=TZ=Etc/UTC
 Environment=VERSION=docker
 Volume=/plex:/config
 Volume=/tank/Anime:/media/Anime
-Volume=/tank/Anime Films:/media/Anime Films
-Volume=/tank/Home Media:/media/Home Media
+Volume=/tank/AnimeFilms:/media/AnimeFilms
+Volume=/tank/HomeMedia:/media/HomeMedia
 Volume=/tank/Movies:/media/Movies
 Volume=/tank/Music:/media/Music
-Volume=/tank/Short Films:/media/Short Films
-Volume=/tank/TV Series:/media/TV Series
+Volume=/tank/ShortFilms:/media/ShortFilms
+Volume=/tank/TVSeries:/media/TVSeries
 Notify=no
 
 [Install]
