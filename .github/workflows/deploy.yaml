@@ -24,12 +24,14 @@ jobs:
           echo "Found containers: $CONTAINERS"
   test: 
     runs-on: self-hosted
+    needs: discover
     steps:
       - name: output
         run: | 
           echo ${{ needs.discover.outputs.containers }}
   deploy:
     runs-on: self-hosted
+    needs: discover
     strategy:
       matrix:
         container: ${{ fromJson(needs.discover.outputs.containers) }}
