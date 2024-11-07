@@ -7,13 +7,13 @@ Environment=PGID=${PLEX_UID}
 Environment=TZ=Etc/UTC
 Environment=VERSION=docker
 Volume=/plex:/config
-Volume=/tank/Anime:/media/Anime
-Volume=/tank/AnimeFilms:/media/AnimeFilms
-Volume=/tank/HomeMedia:/media/HomeMedia
-Volume=/tank/Movies:/media/Movies
-Volume=/tank/Music:/media/Music
-Volume=/tank/ShortFilms:/media/ShortFilms
-Volume=/tank/TVSeries:/media/TVSeries
+Volume=/tank/Media/Anime:/media/Anime
+Volume=/tank/Media/AnimeFilms:/media/AnimeFilms
+Volume=/tank/Media/HomeMedia:/media/HomeMedia
+Volume=/tank/Media/Movies:/media/Movies
+Volume=/tank/Media/Music:/media/Music
+Volume=/tank/Media/ShortFilms:/media/ShortFilms
+Volume=/tank/Media/TVSeries:/media/TVSeries
 Notify=no
 
 [Install]
