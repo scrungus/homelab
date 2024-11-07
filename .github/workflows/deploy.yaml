@@ -29,7 +29,7 @@ jobs:
         env:
           PLEX_UID: ${{ steps.get-uid.outputs.uid }}
         run: |
-          envsubst < ./containers/plex.container.template | sudo tee /etc/containers/systemd/plex.container
+          envsubst < ./containers/plex.container | sudo tee /etc/containers/systemd/plex.container
           
       - name: Reload systemd daemon
         run: |
