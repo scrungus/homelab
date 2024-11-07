@@ -46,3 +46,4 @@ jobs:
       - name: Output list of running containers
         run: | 
           sudo podman ps
+        if: success() || failure()
