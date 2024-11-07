@@ -27,12 +27,12 @@ jobs:
     steps:
       - name: output
         run: | 
-          echo ${{ needs.setup.outputs.containers }}
+          echo ${{ needs.discover.outputs.containers }}
   deploy:
     runs-on: self-hosted
     strategy:
       matrix:
-        container: ${{ fromJson(needs.setup.outputs.containers) }}
+        container: ${{ fromJson(needs.discover.outputs.containers) }}
       fail-fast: false
     
     steps:
