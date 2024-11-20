@@ -1,5 +1,6 @@
 [Container]
 Image=lscr.io/linuxserver/plex:latest
+AutoUpdate=registry
 ContainerName=plex
 Network=host
 Environment=PUID=${USER_ID}

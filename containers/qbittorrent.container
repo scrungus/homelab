@@ -1,5 +1,6 @@
 [Container]
 Image=lscr.io/linuxserver/qbittorrent:latest
+AutoUpdate=registry
 ContainerName=qbittorrent
 Network=host
 Environment=PUID=${USER_ID}

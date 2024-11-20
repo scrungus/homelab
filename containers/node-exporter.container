@@ -1,6 +1,7 @@
 [Container]
 Exec='--path.rootfs=/host'
 Image=quay.io/prometheus/node-exporter:latest
+AutoUpdate=registry
 Network=host
 PodmanArgs=--pid host
 Volume=/:/host:ro,rslave
