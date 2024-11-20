@@ -55,6 +55,10 @@ jobs:
       - name: Reload systemd daemon
         run: |
           sudo systemctl daemon-reload
+      
+      - name: Pull new images
+        run: |
+          sudo podman auto-update
           
       - name: Restart ${{ matrix.container }} container
         run: |
