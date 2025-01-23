@@ -74,6 +74,8 @@ jobs:
 
   deploy-k3s:
     runs-on: [self-hosted, k3s]
+    env:
+      KUBECONFIG: /etc/rancher/k3s/k3s.yaml
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
