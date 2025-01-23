@@ -3,7 +3,7 @@ SHITS WORKING BABY!! {{ .Chart.Name }} installed.
 Your Plex Media Server has been deployed with the following configuration:
   * Using host network mode
   * Config directory: {{ .Values.persistence.config.path }}
-  * Media directories mounted from {{ .Values.persistence.media.movies.path | dirname }}
+  * Media directories mounted from {{ dir .Values.persistence.media.movies.path }}
 
 To access your Plex server:
 1. Wait for the pod to be ready:
