@@ -1,0 +1,13 @@
+SHITS WORKING BABY!! {{ .Chart.Name }} installed.
+
+Your Plex Media Server has been deployed with the following configuration:
+  * Using host network mode
+  * Config directory: {{ .Values.persistence.config.path }}
+  * Media directories mounted from {{ .Values.persistence.media.movies.path | dirname }}
+
+To access your Plex server:
+1. Wait for the pod to be ready:
+   kubectl get pods --namespace {{ .Release.Namespace }} -l "app=plex"
+
+2. Since the server is running in host network mode, you can access it directly:
+   * Web Interface: http://<node-ip>:32400/web

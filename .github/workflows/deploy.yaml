@@ -1,4 +1,4 @@
-name: Deploy Plex Container
+name: Deploy Infrastructure
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  discover:
-    runs-on: self-hosted
+  discover-quadlet:
+    runs-on: [self-hosted, quadlet]
     outputs:
       containers: ${{ steps.set-matrix.outputs.containers }}
     steps:
@@ -22,12 +22,12 @@ jobs:
           echo "containers=$CONTAINERS" >> "$GITHUB_OUTPUT"
           echo "Found containers: $CONTAINERS"
 
-  deploy:
-    runs-on: self-hosted
-    needs: discover
+  deploy-quadlet:
+    runs-on: [self-hosted, quadlet]
+    needs: discover-quadlet
     strategy:
       matrix:
-        container: ${{ fromJson(needs.discover.outputs.containers) }}
+        container: ${{ fromJson(needs.discover-quadlet.outputs.containers) }}
       fail-fast: false
     
     steps:
@@ -49,7 +49,6 @@ jobs:
         env:
           USER_ID: ${{ steps.get-uid.outputs.uid }}
         run: |
-          # Template and deploy configuration
           envsubst < "./containers/${{ matrix.container }}.container" | sudo tee "/etc/containers/systemd/${{ matrix.container }}.container"
           
       - name: Reload systemd daemon
@@ -72,3 +71,57 @@ jobs:
         run: | 
           sudo podman ps
         if: success() || failure()
+
+  deploy-k3s:
+    runs-on: [self-hosted, k3s]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # - name: Install kubectl
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y apt-transport-https ca-certificates curl
+      #     curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+      #     echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+      #     sudo apt-get update
+      #     sudo apt-get install -y kubectl
+
+      # - name: Install Helm
+      #   run: |
+      #     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      # - name: Configure k3s
+      #   run: |
+      #     # Install k3s if not already installed
+      #     if ! command -v k3s &> /dev/null; then
+      #       curl -sfL https://get.k3s.io | sh -
+      #     fi
+          
+      #     # Wait for k3s to be ready
+      #     timeout 60s bash -c 'until kubectl get nodes; do sleep 2; done'
+          
+      #     # Get kubeconfig
+      #     sudo cat /etc/rancher/k3s/k3s.yaml > $HOME/.kube/config
+      #     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+      #     chmod 600 $HOME/.kube/config
+
+      - name: Get user ID for Plex
+        id: get-uid
+        run: |
+          USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
+          echo "uid=$USER_ID" >> $GITHUB_OUTPUT
+
+      - name: Deploy Plex to k3s
+        env:
+          USER_ID: ${{ steps.get-uid.outputs.uid }}
+        run: |
+          helm upgrade --install plex ./helm/plex \
+            --set user.puid=$USER_ID \
+            --set user.pgid=$USER_ID \
+            --wait
+
+      - name: Verify Plex deployment
+        run: |
+          kubectl get pods -l app=plex
+          kubectl get deployment plex -o jsonpath='{.status.conditions[?(@.type=="Available")].status}'

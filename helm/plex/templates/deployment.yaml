@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+      containers:
+        - name: plex
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PUID
+              value: {{ .Values.user.puid | quote }}
+            - name: PGID
+              value: {{ .Values.user.pgid | quote }}
+            - name: TZ
+              value: {{ .Values.environment.TZ | quote }}
+            - name: VERSION
+              value: {{ .Values.environment.VERSION | quote }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: anime
+              mountPath: /media/Anime
+            - name: animefilms
+              mountPath: /media/AnimeFilms
+            - name: homemedia
+              mountPath: /media/HomeMedia
+            - name: movies
+              mountPath: /media/Movies
+            - name: music
+              mountPath: /media/Music
+            - name: shortfilms
+              mountPath: /media/ShortFilms
+            - name: tvseries
+              mountPath: /media/TVSeries
+            - name: documentaries
+              mountPath: /media/Documentaries
+      volumes:
+        - name: config
+          hostPath:
+            path: {{ .Values.persistence.config.path }}
+        - name: anime
+          hostPath:
+            path: {{ .Values.persistence.media.anime.path }}
+        - name: animefilms
+          hostPath:
+            path: {{ .Values.persistence.media.animeFilms.path }}
+        - name: homemedia
+          hostPath:
+            path: {{ .Values.persistence.media.homeMedia.path }}
+        - name: movies
+          hostPath:
+            path: {{ .Values.persistence.media.movies.path }}
+        - name: music
+          hostPath:
+            path: {{ .Values.persistence.media.music.path }}
+        - name: shortfilms
+          hostPath:
+            path: {{ .Values.persistence.media.shortFilms.path }}
+        - name: tvseries
+          hostPath:
+            path: {{ .Values.persistence.media.tvSeries.path }}
+        - name: documentaries
+          hostPath:
+            path: {{ .Values.persistence.media.documentaries.path }}
