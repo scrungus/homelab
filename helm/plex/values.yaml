@@ -4,8 +4,11 @@ image:
   tag: latest
   pullPolicy: Always
 
-# Network configuration
-hostNetwork: true
+# Service configuration
+service:
+  type: NodePort
+  port: 32400
+  nodePort: 32400
 
 # User configuration
 user:

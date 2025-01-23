@@ -12,11 +12,13 @@ spec:
       labels:
         app: plex
     spec:
-      hostNetwork: {{ .Values.hostNetwork }}
       containers:
         - name: plex
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 32400
+              protocol: TCP
           env:
             - name: PUID
               value: {{ .Values.user.puid | quote }}
