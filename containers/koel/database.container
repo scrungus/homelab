@@ -2,4 +2,4 @@
 Environment=MYSQL_ROOT_PASSWORD=testpass MYSQL_DATABASE=koel MYSQL_USER=koel MYSQL_PASSWORD=testpass
 Image=docker.io/mariadb:10.11
 Network=host
-Volume=db.volume:/var/lib/mysql
+Volume=/koeldb:/var/lib/mysql

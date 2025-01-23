@@ -9,7 +9,7 @@ Environment=TOKEN=e9f2ab3e2950a608c5456a4a922686066b95004d66e4dbe6b44607f5f9c07b
 Environment=TECHNOLOGY=NordLynx
 Environment=NETWORK=192.168.0.0/24
 PublishPort=6881:6881
-AddSysctl=net.ipv6.conf.all.disable_ipv6=1
+Sysctl=net.ipv6.conf.all.disable_ipv6=1
 
 [Install]
 WantedBy=multi-user.target default.target

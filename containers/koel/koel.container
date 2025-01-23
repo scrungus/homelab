@@ -3,9 +3,10 @@ Requires=database.service
 After=database.service
 
 [Container]
-Environment=DB_CONNECTION=mysql DB_HOST=database DB_USERNAME=koel DB_PASSWORD=testpass DB_DATABASE=koel
+Environment=DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_USERNAME=koel DB_PASSWORD=testpass DB_DATABASE=koel
 Image=docker.io/phanan/koel
 Network=host
 Volume=/tank/Media/Music:/music
-Volume=covers.volume:/var/www/html/public/img/covers
-Volume=search_index.volume:/var/www/html/storage/search-indexes
+Volume=./.env:/var/www/html/.env
+Volume=/tank/Covers/var/www/html/public/img/covers
+Volume=/search_index:/var/www/html/storage/search-indexes
