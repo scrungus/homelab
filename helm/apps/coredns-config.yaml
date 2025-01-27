@@ -10,6 +10,7 @@ spec:
     targetRevision: HEAD
     path: helm/coredns-config
   destination:
+    server: https://kubernetes.default.svc
     namespace: kube-system
   syncPolicy:
     automated:

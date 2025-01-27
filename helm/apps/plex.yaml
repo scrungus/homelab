@@ -10,6 +10,7 @@ spec:
     targetRevision: HEAD
     path: helm/plex
   destination:
+    server: https://kubernetes.default.svc
     namespace: default
   syncPolicy:
     automated:
