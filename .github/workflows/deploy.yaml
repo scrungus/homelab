@@ -125,4 +125,4 @@ jobs:
       - name: Apply initial Application CRDs
         run: |
           # Apply the Application definitions
-          kubectl apply -f apps/
+          kubectl apply -f helm/apps/
