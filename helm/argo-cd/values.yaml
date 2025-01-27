@@ -2,10 +2,7 @@ argo-cd:
   server:
     service:
       type: NodePort
-      nodePortHttp: 30080
-      nodePortHttps: 30081
-    extraArgs:
-      - --insecure
+      nodePortHttps: 30080
     config:
       repositories: |
         - type: git
