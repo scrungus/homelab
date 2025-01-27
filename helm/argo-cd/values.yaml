@@ -1,5 +1,11 @@
 argo-cd:
   server:
+    service:
+      type: NodePort
+      nodePortHttp: 9090
+      nodePortHttps: 9091
+    extraArgs:
+      - --insecure
     config:
       repositories: |
         - type: git
