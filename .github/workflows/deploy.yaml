@@ -116,11 +116,26 @@ jobs:
 
       - name: Install ArgoCD
         run: |
+          # Install ArgoCD using our chart
           helm dependency update ./helm/argo-cd
           helm upgrade --install argocd ./helm/argo-cd \
             --namespace argocd \
-            --create-namespace \
             --wait
+
+          # Create Git credentials secret
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: github-repo
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repository
+          stringData:
+            url: https://github.com/scrungus/homelab.git
+            username: scrungus
+            password: ${{ secrets.GH_PAT }}
+          EOF
       
       - name: Apply initial Application CRDs
         run: |
