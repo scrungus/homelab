@@ -11,7 +11,9 @@ spec:
     path: helm/argo-cd
   destination:
     namespace: argocd
-      syncPolicy:
+  syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
