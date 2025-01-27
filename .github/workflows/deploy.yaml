@@ -119,4 +119,5 @@ jobs:
           helm dependency update ./helm/argo-cd
           helm upgrade --install argocd ./helm/argo-cd \
             --namespace argocd \
+            --create-namespace \
             --wait
