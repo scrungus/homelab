@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  home.server: |
+    home.lan {
+        rewrite name argocd.home.lan ingress-traefik.kube-system.svc.cluster.local
+    }

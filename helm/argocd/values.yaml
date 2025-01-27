@@ -1,0 +1,10 @@
+argo-cd:
+  server:
+    config:
+      repositories: |
+        - type: git
+          url: https://github.com/scrungus/homelab.git
+  dex:
+    enabled: false
+  notifications:
+    enabled: false

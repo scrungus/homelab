@@ -1,12 +1,13 @@
-[Unit]
-Requires=vpn.service
-After=vpn.service
+#[Unit]
+#Requires=vpn.service
+#After=vpn.service
 
 [Container]
 Image=lscr.io/linuxserver/qbittorrent:latest
 ContainerName=qbittorrent
 AutoUpdate=registry
-Network=container:vpn
+#Network=container:vpn
+Network=host
 Environment=PUID=${USER_ID}
 Environment=PGID=${USER_ID}
 Environment=TZ=Etc/UTC

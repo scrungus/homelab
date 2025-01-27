@@ -114,16 +114,9 @@ jobs:
           USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
           echo "uid=$USER_ID" >> $GITHUB_OUTPUT
 
-      - name: Deploy Plex to k3s
-        env:
-          USER_ID: ${{ steps.get-uid.outputs.uid }}
+      - name: Install ArgoCD
         run: |
-          helm upgrade --install plex ./helm/plex \
-            --set user.puid=$USER_ID \
-            --set user.pgid=$USER_ID \
+          helm dependency update ./helm/argo-cd
+          helm upgrade --install argocd ./helm/argo-cd \
+            --namespace argocd \
             --wait
-
-      - name: Verify Plex deployment
-        run: |
-          kubectl get pods -l app=plex
-          kubectl get deployment plex -o jsonpath='{.status.conditions[?(@.type=="Available")].status}'
