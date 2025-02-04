@@ -5,14 +5,14 @@ metadata:
   namespace: argocd
 spec:
   secretName: argocd-server-tls
-  duration: 8760h # 1 year
-  renewBefore: 720h # 30 days
+  duration: 8760h 
+  renewBefore: 720h 
   dnsNames:
     - argocd.home.lab
   usages:
     - server auth
     - client auth
   issuerRef:
-    name: cluster-issuer
+    name: homelab-issuer
     kind: ClusterIssuer
     group: cert-manager.io
