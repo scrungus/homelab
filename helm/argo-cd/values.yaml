@@ -12,12 +12,9 @@ argo-cd:
       enabled: false  # Disable ArgoCD's certificate management
     ingress:
       enabled: true
-      hosts:
-        - argocd.home.lab
-      tls:
-        - secretName: argocd-server-tls  # This secret will be created by cert-manager
-          hosts:
-            - argocd.home.lab
+      ingressClassName: traefik
+      hostname: argocd.home.lab
+      tls: true
   dex:
     enabled: false
   notifications:
