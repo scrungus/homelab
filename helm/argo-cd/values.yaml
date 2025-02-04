@@ -9,15 +9,13 @@ argo-cd:
           url: https://github.com/scrungus/homelab.git
       url: https://argocd.home.lab 
     certificate:
-      enabled: true
-      domain: argocd.home.lab
-      secretName: argocd-server-tls
+      enabled: false  # Disable ArgoCD's certificate management
     ingress:
       enabled: true
       hosts:
         - argocd.home.lab
       tls:
-        - secretName: argocd-server-tls
+        - secretName: argocd-server-tls  # This secret will be created by cert-manager
           hosts:
             - argocd.home.lab
   dex:
