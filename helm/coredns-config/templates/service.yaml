@@ -16,4 +16,4 @@ spec:
       protocol: TCP
       nodePort: 32053
   selector:
-    k8s-app: coredns-custom
+    k8s-app: kube-dns
