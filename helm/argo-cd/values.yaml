@@ -7,6 +7,19 @@ argo-cd:
       repositories: |
         - type: git
           url: https://github.com/scrungus/homelab.git
+      url: https://argocd.home.lab 
+    certificate:
+      enabled: true
+      domain: argocd.home.lab
+      secretName: argocd-server-tls
+    ingress:
+      enabled: true
+      hosts:
+        - argocd.home.lab
+      tls:
+        - secretName: argocd-server-tls
+          hosts:
+            - argocd.home.lab
   dex:
     enabled: false
   notifications:
