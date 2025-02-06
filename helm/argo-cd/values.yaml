@@ -14,7 +14,7 @@ argo-cd:
       enabled: true
       ingressClassName: traefik
       pathType: Prefix
-      hostname: argocd.home.lab
+      hostname: argocd.lab
       tls: true
   dex:
     enabled: false

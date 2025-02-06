@@ -6,7 +6,7 @@ data:
   home.lab.server: |
     home.lab {
         hosts {
-            192.168.0.10 argocd.home.lab
+            192.168.0.10 argocd.lab
             # Add more entries as needed
             fallthrough
         }
