@@ -11,7 +11,7 @@ spec:
     path: helm/plex
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: plex
   syncPolicy:
     automated:
       prune: true
