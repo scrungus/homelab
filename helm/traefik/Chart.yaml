@@ -1,0 +1,7 @@
+apiVersion: v2
+name: traefik
+version: 1.0.0
+dependencies:
+  - name: traefik
+    version: 27.0.0  # Use the version you want
+    repository: https://helm.traefik.io/traefik
