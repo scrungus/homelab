@@ -13,7 +13,7 @@ argo-cd:
     ingress:
       enabled: true
       ingressClassName: traefik
-      pathType: Exact
+      pathType: Prefix
       hostname: argocd.home.lab
       tls: true
   dex:
