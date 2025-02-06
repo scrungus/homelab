@@ -7,7 +7,7 @@ data:
     lab {
         hosts {
             192.168.0.10 argocd.lab
-            # Add more entries as needed
+            192.168.0.10 qbittorrent.lab
             fallthrough
         }
         forward . 8.8.8.8
