@@ -1,7 +1,11 @@
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: qbittorrent
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/ingress.provider: traefik
 spec:
   ingressClassName: traefik
   rules:
