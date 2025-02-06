@@ -8,7 +8,7 @@ spec:
   duration: 8760h 
   renewBefore: 720h 
   dnsNames:
-    - argocd.home.lab
+    - argocd.lab
   usages:
     - server auth
     - client auth

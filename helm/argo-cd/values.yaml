@@ -7,7 +7,7 @@ argo-cd:
       repositories: |
         - type: git
           url: https://github.com/scrungus/homelab.git
-      url: https://argocd.home.lab 
+      url: https://argocd.lab 
     certificate:
       enabled: false  # Disable ArgoCD's certificate management
     ingress:
