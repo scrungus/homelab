@@ -2,12 +2,16 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: coredns-custom
+  namespace: kube-system
 data:
   lab.server: |
     lab {
         hosts {
             192.168.0.10 argocd.lab
             192.168.0.10 qbittorrent.lab
+            192.168.0.10 grafana.lab
+            192.168.0.10 prometheus.lab 
+            192.168.0.10 alertmanager.lab
             fallthrough
         }
         forward . 8.8.8.8

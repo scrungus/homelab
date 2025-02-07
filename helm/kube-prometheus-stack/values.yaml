@@ -1,0 +1,59 @@
+kube-prometheus-stack:
+  grafana:
+    persistence:
+      enabled: true
+      size: 10Gi
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-issuer
+      hosts:
+        - grafana.lab
+      tls:
+        - secretName: monitoring-tls
+          hosts:
+            - grafana.lab
+    
+  prometheus:
+    prometheusSpec:
+      retention: 30d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-issuer
+      hosts:
+        - prometheus.lab
+      tls:
+        - secretName: monitoring-tls
+          hosts:
+            - prometheus.lab
+
+  alertmanager:
+    alertmanagerSpec:
+      storage:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: homelab-issuer
+      hosts:
+        - alertmanager.lab
+      tls:
+        - secretName: monitoring-tls
+          hosts:
+            - alertmanager.lab
