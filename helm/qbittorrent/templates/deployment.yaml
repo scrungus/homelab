@@ -17,9 +17,17 @@ spec:
         image: lscr.io/linuxserver/qbittorrent:latest
         env:
         - name: PUID
-          value: "{{ .Values.userId }}"
+          valueFrom:
+            secretKeyRef:
+              name: user-id-secret
+              key: USER_ID
+              namespace: default
         - name: PGID
-          value: "{{ .Values.userId }}"
+          valueFrom:
+            secretKeyRef:
+              name: user-id-secret
+              key: USER_ID
+              namespace: default
         - name: TZ
           value: "Etc/UTC"
         - name: WEBUI_PORT

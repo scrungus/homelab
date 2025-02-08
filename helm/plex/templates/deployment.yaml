@@ -20,10 +20,18 @@ spec:
             - containerPort: 32400
               protocol: TCP
           env:
-            - name: PUID
-              value: {{ .Values.user.puid | quote }}
-            - name: PGID
-              value: {{ .Values.user.pgid | quote }}
+          - name: PUID
+            valueFrom:
+              secretKeyRef:
+                name: user-id-secret
+                key: USER_ID
+                namespace: default
+          - name: PGID
+            valueFrom:
+              secretKeyRef:
+                name: user-id-secret
+                key: USER_ID
+                namespace: default
             - name: TZ
               value: {{ .Values.environment.TZ | quote }}
             - name: VERSION

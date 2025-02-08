@@ -10,11 +10,6 @@ service:
   port: 32400
   nodePort: 32400
 
-# User configuration
-user:
-  puid: "${USER_ID}"
-  pgid: "${USER_ID}"
-
 # Environment configuration
 environment:
   TZ: Etc/UTC
