@@ -111,6 +111,7 @@ jobs:
       - name: Create user ID secret
         run: |
           USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
+          export USER_ID  # Export it so envsubst can access it
           envsubst < "./helm/base-config/user-id-secret.yaml" | kubectl apply -f -
 
       - name: Install ArgoCD
