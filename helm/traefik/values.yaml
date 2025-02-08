@@ -1,6 +1,7 @@
 traefik:
   additionalArguments:
     - "--log.level=DEBUG"
+    - "--providers.kubernetesingress.publishedservice=kube-system/traefik"
     - "--providers.kubernetesingress.allowexternalnameservices=true"
     - "--providers.kubernetescrd.allowexternalnameservices=true"
     - "--serversTransport.insecureSkipVerify=true"
