@@ -23,3 +23,5 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - Replace=true
+      # Prune Last (i.e. after it was synced) to not removed dynamically created admissions/patch jobs/pods
+      - PruneLast=true
