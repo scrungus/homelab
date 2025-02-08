@@ -3,12 +3,16 @@ kind: Application
 metadata:
   name: kube-prometheus-stack
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   source:
     repoURL: https://github.com/scrungus/homelab.git
     targetRevision: HEAD
     path: helm/kube-prometheus-stack
+    helm:
+      skipCrds: true
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -19,4 +23,3 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - Replace=true
-      - ServerSideApply=true
