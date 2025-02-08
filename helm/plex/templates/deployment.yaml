@@ -25,13 +25,11 @@ spec:
               secretKeyRef:
                 name: user-id-secret
                 key: USER_ID
-                namespace: default
           - name: PGID
             valueFrom:
               secretKeyRef:
                 name: user-id-secret
                 key: USER_ID
-                namespace: default
             - name: TZ
               value: {{ .Values.environment.TZ | quote }}
             - name: VERSION
