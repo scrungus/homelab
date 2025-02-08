@@ -2,11 +2,12 @@ kube-prometheus-stack:
   crds:
     enabled: false
 
-  admissionWebhooks:
-    certManager:
-      enabled: false
-    patch:
-      enabled: false
+  prometheusOperator:
+    admissionWebhooks:
+      certManager:
+        enabled: false
+      patch:
+        enabled: false
 
   grafana:
     persistence:
