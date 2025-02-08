@@ -10,7 +10,9 @@ spec:
   hostPath:
     path: /appdata/qbittorrent
   storageClassName: local-path
-
+  claimRef:
+    namespace: qbittorrent
+    name: qbittorrent-config
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -18,9 +20,12 @@ metadata:
   name: qbittorrent-downloads
 spec:
   capacity:
-    storage: 500Gi  # Adjust based on your needs
+    storage: 500Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
     path: /tank/torrents
   storageClassName: local-path
+  claimRef:
+    namespace: qbittorrent
+    name: qbittorrent-downloads

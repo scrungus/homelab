@@ -1,4 +1,8 @@
 kube-prometheus-stack:
+  crds:
+    enabled: true
+    create: true
+
   grafana:
     persistence:
       enabled: true
