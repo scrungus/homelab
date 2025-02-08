@@ -108,11 +108,10 @@ jobs:
       #     sudo chown $(id -u):$(id -g) $HOME/.kube/config
       #     chmod 600 $HOME/.kube/config
 
-      - name: Get user ID for Plex
-        id: get-uid
+      - name: Create user ID secret
         run: |
           USER_ID=$(id -u ${{ secrets.SYSTEM_USER }})
-          echo "uid=$USER_ID" >> $GITHUB_OUTPUT
+          envsubst < "./helm/base-config/user-id-secret.yaml" | kubectl apply -f -
 
       - name: Install ArgoCD
         run: |
@@ -137,7 +136,6 @@ jobs:
             password: ${{ secrets.GH_PAT }}
           EOF
       
-      - name: Apply initial Application CRDs
+      - name: Apply Application CRDs
         run: |
-          # Apply the Application definitions
           kubectl apply -f helm/apps/
