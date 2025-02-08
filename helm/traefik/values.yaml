@@ -1,7 +1,6 @@
 traefik:
   additionalArguments:
     - "--log.level=DEBUG"
-    - "--providers.kubernetesingress.publishedservice=kube-system/traefik"
     - "--providers.kubernetesingress.allowexternalnameservices=true"
     - "--providers.kubernetescrd.allowexternalnameservices=true"
     - "--serversTransport.insecureSkipVerify=true"
@@ -14,3 +13,8 @@ traefik:
     type: LoadBalancer
     spec:
       loadBalancerIP: "192.168.0.10" 
+  
+  providers:
+    kubernetesIngress:
+      ingressEndpoint:
+        publishedService: "kube-system/traefik"
