@@ -11,7 +11,7 @@ kube-prometheus-stack:
       hosts:
         - grafana.lab
       tls:
-        - secretName: monitoring-tls
+        - secretName: grafana-tls
           hosts:
             - grafana.lab
     
@@ -33,7 +33,7 @@ kube-prometheus-stack:
       hosts:
         - prometheus.lab
       tls:
-        - secretName: monitoring-tls
+        - secretName: prometheus-tls
           hosts:
             - prometheus.lab
 
@@ -54,6 +54,6 @@ kube-prometheus-stack:
       hosts:
         - alertmanager.lab
       tls:
-        - secretName: monitoring-tls
+        - secretName: alertmanager-tls
           hosts:
             - alertmanager.lab
