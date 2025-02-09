@@ -55,8 +55,8 @@ spec:
               mountPath: /media/Documentaries
       volumes:
         - name: config
-          hostPath:
-            path: {{ .Values.persistence.config.path }}
+          persistentVolumeClaim:
+          claimName: plex-config
         - name: anime
           hostPath:
             path: {{ .Values.persistence.media.anime.path }}
