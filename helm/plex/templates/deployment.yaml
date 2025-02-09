@@ -21,13 +21,13 @@ spec:
               protocol: TCP
           env:
             - name: PUID
-              value: "1000"
+              value: "${USER_ID}"
               # valueFrom:
               #   secretKeyRef:
               #     name: user-id-secret
               #     key: USER_ID
             - name: PGID
-              value: "1000"
+              value: "${USER_ID}"
               # valueFrom:
               #   secretKeyRef:
               #     name: user-id-secret
