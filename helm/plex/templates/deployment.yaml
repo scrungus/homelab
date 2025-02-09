@@ -56,7 +56,7 @@ spec:
       volumes:
         - name: config
           persistentVolumeClaim:
-          claimName: plex-config
+            claimName: plex-config
         - name: anime
           hostPath:
             path: {{ .Values.persistence.media.anime.path }}
