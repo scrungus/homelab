@@ -21,17 +21,15 @@ spec:
               protocol: TCP
           env:
             - name: PUID
-              value: "${USER_ID}"
-              # valueFrom:
-              #   secretKeyRef:
-              #     name: user-id-secret
-              #     key: USER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: user-id-secret
+                  key: USER_ID
             - name: PGID
-              value: "${USER_ID}"
-              # valueFrom:
-              #   secretKeyRef:
-              #     name: user-id-secret
-              #     key: USER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: user-id-secret
+                  key: USER_ID
             - name: TZ
               value: {{ .Values.environment.TZ | quote }}
             - name: VERSION
