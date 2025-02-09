@@ -1,7 +1,7 @@
 # Default values for Plex
 image:
   repository: lscr.io/linuxserver/plex
-  tag: latest
+  tag: 1.41.2
   pullPolicy: Always
 
 # Service configuration
