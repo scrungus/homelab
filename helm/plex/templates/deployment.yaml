@@ -21,7 +21,7 @@ spec:
               protocol: TCP
           env:
             - name: ADVERTISE_IP
-              value: "http://192.168.0.10:32400/"
+              value: "http://192.168.0.10:32400/,https://plex.lab/"
             - name: PUID
               valueFrom:
                 secretKeyRef:

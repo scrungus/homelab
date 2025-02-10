@@ -6,15 +6,16 @@ metadata:
 data:
   lab.server: |
     lab {
-        hosts {
-            192.168.0.10 argocd.lab
-            192.168.0.10 qbittorrent.lab
-            192.168.0.10 grafana.lab
-            192.168.0.10 prometheus.lab 
-            192.168.0.10 alertmanager.lab
-            fallthrough
-        }
-        forward . 8.8.8.8
-        log
-        errors
+      hosts {
+        192.168.0.10 argocd.lab
+        192.168.0.10 qbittorrent.lab
+        192.168.0.10 grafana.lab
+        192.168.0.10 prometheus.lab
+        192.168.0.10 alertmanager.lab
+        192.168.0.10 plex.lab
+        fallthrough
+      }
+      forward . 8.8.8.8
+      log
+      errors
     }

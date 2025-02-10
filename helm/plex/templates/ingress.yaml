@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex
+  namespace: plex
+  annotations:
+    kubernetes.io/ingress.provider: traefik
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - plex.lab
+      secretName: plex-tls
+  rules:
+    - host: plex.lab
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex-plex
+                port:
+                  number: {{ .Values.service.port }}
