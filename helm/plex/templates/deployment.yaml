@@ -34,6 +34,18 @@ spec:
               value: {{ .Values.environment.TZ | quote }}
             - name: VERSION
               value: {{ .Values.environment.VERSION | quote }}
+          readinessProbe:
+            httpGet:
+              path: /identity
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /identity
+              port: {{ .Values.service.port }}
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
           volumeMounts:
             - name: config
               mountPath: /config
