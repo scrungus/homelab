@@ -41,11 +41,13 @@ spec:
             initialDelaySeconds: 15
             timeoutSeconds: 5
           livenessProbe:
+            failureThreshold: 10
             httpGet:
               path: /identity
               port: {{ .Values.service.port }}
-          initialDelaySeconds: 10
-          timeoutSeconds: 10
+            periodSeconds: 25
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
           volumeMounts:
             - name: config
               mountPath: /config
