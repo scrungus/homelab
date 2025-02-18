@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: registry-cert
-  namespace: plex
+  namespace: registry
 spec:
   secretName: registry-tls
   duration: 8760h
