@@ -10,7 +10,7 @@ service:
 ingress:
   enabled: true
   className: traefik
-  host: registry.tylers-homelab.internal
+  host: registry.lab
   tls: true
 
 persistence:

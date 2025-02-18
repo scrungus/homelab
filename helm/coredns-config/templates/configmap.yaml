@@ -13,6 +13,7 @@ data:
         192.168.0.10 prometheus.lab
         192.168.0.10 alertmanager.lab
         192.168.0.10 plex.lab
+        192.168.0.10 registry.lab
         fallthrough
       }
       forward . 8.8.8.8
