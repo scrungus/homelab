@@ -1,0 +1,21 @@
+image:
+  repository: registry
+  tag: 2
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: true
+  className: traefik
+  host: registry.tylers-homelab.internal
+  tls: true
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 20Gi
+  mountPath: /var/lib/registry
+  hostPath: /mnt/registry-data
