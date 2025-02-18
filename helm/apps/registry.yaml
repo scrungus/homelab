@@ -11,7 +11,7 @@ spec:
     path: helm/registry
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: registry
   syncPolicy:
     automated:
       prune: true
