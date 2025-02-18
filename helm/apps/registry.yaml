@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/yourusername/homelab.git
+    repoURL: https://github.com/scrungus/homelab.git
     targetRevision: HEAD
     path: helm/registry
   destination:
