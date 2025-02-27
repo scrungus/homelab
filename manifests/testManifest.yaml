@@ -93,17 +93,13 @@ spec:
             
             # Create the secret for the application
             echo "Creating secret in PreSync phase"
-            cat <<EOF | kubectl apply -f -
-            apiVersion: v1
-            kind: Secret
-            metadata:
-              name: test-secret
-              namespace: hook-test
-            type: Opaque
-            data:
-              username: $(echo -n "admin" | base64)
-              password: $(echo -n "t0p-s3cr3t" | base64)
-            EOF
+            
+            # Create secret directly rather than using heredoc
+            kubectl create secret generic test-secret \
+              --namespace=hook-test \
+              --from-literal=username=admin \
+              --from-literal=password=t0p-s3cr3t
+              
             echo "Secret creation completed"
           fi
           
