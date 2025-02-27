@@ -1,0 +1,143 @@
+# hook-test.yaml
+---
+# Create a namespace for our test
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hook-test
+---
+# Service Account with appropriate hook annotations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hook-sa
+  namespace: hook-test
+  annotations:
+    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+---
+# Role with appropriate hook annotations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secret-manager
+  namespace: hook-test
+  annotations:
+    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "get", "delete", "list"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list"]
+---
+# RoleBinding with appropriate hook annotations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: hook-sa-binding
+  namespace: hook-test
+  annotations:
+    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+subjects:
+- kind: ServiceAccount
+  name: hook-sa
+  namespace: hook-test
+roleRef:
+  kind: Role
+  name: secret-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+# The main hook job with both PreSync and PostDelete annotations
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dual-phase-hook
+  namespace: hook-test
+  annotations:
+    argocd.argoproj.io/hook: PreSync,PostDelete
+    # This is critical - it ensures the job is removed after success
+    # so it can be recreated for the PostDelete phase
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      annotations:
+        # This helps ensure the job pod gets a unique name each time
+        hook.argocd/phase: "{{env.PHASE}}"
+    spec:
+      serviceAccountName: hook-sa
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Running hook job..."
+          
+          # Detect which phase we're in by checking for the existence of the secret
+          if kubectl get secret test-secret -n hook-test --ignore-not-found; then
+            echo "Secret exists - this is the PostDelete phase"
+            
+            # Clean up the secret
+            echo "Cleaning up secret in PostDelete phase"
+            kubectl delete secret test-secret -n hook-test
+            echo "Secret deletion completed"
+          else
+            echo "Secret doesn't exist - this is the PreSync phase"
+            
+            # Create the secret for the application
+            echo "Creating secret in PreSync phase"
+            cat <<EOF | kubectl apply -f -
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: test-secret
+              namespace: hook-test
+            type: Opaque
+            data:
+              username: $(echo -n "admin" | base64)
+              password: $(echo -n "t0p-s3cr3t" | base64)
+            EOF
+            echo "Secret creation completed"
+          fi
+          
+          echo "Hook job completed successfully!"
+      restartPolicy: Never
+  backoffLimit: 2
+---
+# A simple deployment that uses the secret
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+  namespace: hook-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:latest
+        env:
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: test-secret
+              key: username
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: test-secret
+              key: password
