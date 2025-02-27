@@ -56,7 +56,7 @@ metadata:
   namespace: hook-test
   annotations:
     argocd.argoproj.io/hook: PreSync,PostDelete
-    #argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
   ttlSecondsAfterFinished: 100
   template:
@@ -87,23 +87,42 @@ spec:
             message: "Dual-phase hook executed"
           EOF
           
-          # Detect which phase we're in by checking for the existence of the secret
-          if kubectl get secret test-secret -n hook-test --ignore-not-found; then
-            echo "Secret exists - this is the PostDelete phase"
-            
-            # Add a label to the ConfigMap to indicate phase
-            kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=PostDelete
-            
-            # Clean up the secret
-            echo "Cleaning up secret in PostDelete phase"
-            kubectl delete secret test-secret -n hook-test
-            echo "Secret deletion completed"
+          # IMPROVED PHASE DETECTION:
+          # Check if the app deployment exists to determine phase more reliably
+          # For PreSync: Deployment shouldn't exist yet
+          # For PostDelete: Deployment should be gone or in terminating state
+          
+          # First explicitly check for the deployment
+          DEPLOYMENT_OUTPUT=$(kubectl get deployment test-app -n hook-test -o name --ignore-not-found 2>/dev/null)
+          
+          # Then check for the secret and capture its actual output
+          SECRET_OUTPUT=$(kubectl get secret test-secret -n hook-test -o name --ignore-not-found 2>/dev/null)
+          
+          # Print debug information
+          echo "Deployment check output: '$DEPLOYMENT_OUTPUT'"
+          echo "Secret check output: '$SECRET_OUTPUT'"
+          
+          if [ -z "$DEPLOYMENT_OUTPUT" ] && [ -z "$SECRET_OUTPUT" ]; then
+            # No deployment and no secret - this is PreSync
+            echo "Both deployment and secret are missing - this is the PreSync phase"
+            PHASE="PreSync"
+          elif [ -n "$DEPLOYMENT_OUTPUT" ] || [ -n "$SECRET_OUTPUT" ]; then
+            # Either deployment or secret exists - this is PostDelete
+            echo "Either deployment or secret exists - this is the PostDelete phase"
+            PHASE="PostDelete"
           else
-            echo "Secret doesn't exist - this is the PreSync phase"
-            
-            # Add a label to the ConfigMap to indicate phase
-            kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=PreSync
-            
+            # This shouldn't happen, but default to PreSync
+            echo "Unable to determine phase - defaulting to PreSync"
+            PHASE="PreSync"
+          fi
+          
+          echo "Detected phase: $PHASE"
+          
+          # Add a label to the ConfigMap to indicate phase
+          kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=${PHASE}
+          
+          # Execute appropriate phase actions
+          if [ "$PHASE" = "PreSync" ]; then
             # Create the secret for the application
             echo "Creating secret in PreSync phase"
             kubectl create secret generic test-secret \
@@ -111,6 +130,15 @@ spec:
               --from-literal=username=admin \
               --from-literal=password=t0p-s3cr3t
             echo "Secret creation completed"
+          else
+            # Clean up the secret
+            echo "Cleaning up secret in PostDelete phase"
+            if [ -n "$SECRET_OUTPUT" ]; then
+              kubectl delete secret test-secret -n hook-test
+              echo "Secret deletion completed"
+            else
+              echo "Secret not found - nothing to delete"
+            fi
           fi
           
           echo "Hook job completed successfully!"
