@@ -26,7 +26,7 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["secrets", "configmaps"]
-  verbs: ["create", "get", "delete", "list"]
+  verbs: ["create", "get", "delete", "list", "patch"]
 - apiGroups: ["batch"]
   resources: ["jobs"]
   verbs: ["get", "list"]
