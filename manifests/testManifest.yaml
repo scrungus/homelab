@@ -6,7 +6,7 @@ kind: Namespace
 metadata:
   name: hook-test
 ---
-# Service Account with appropriate hook annotations
+# Service Account for the hooks
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -14,9 +14,8 @@ metadata:
   namespace: hook-test
   annotations:
     argocd.argoproj.io/hook: PreSync,PostDelete
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 ---
-# Role with appropriate hook annotations
+# Role for secret management
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -24,16 +23,15 @@ metadata:
   namespace: hook-test
   annotations:
     argocd.argoproj.io/hook: PreSync,PostDelete
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 rules:
 - apiGroups: [""]
-  resources: ["secrets"]
+  resources: ["secrets", "configmaps"]
   verbs: ["create", "get", "delete", "list"]
 - apiGroups: ["batch"]
   resources: ["jobs"]
   verbs: ["get", "list"]
 ---
-# RoleBinding with appropriate hook annotations
+# RoleBinding for the service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -41,7 +39,6 @@ metadata:
   namespace: hook-test
   annotations:
     argocd.argoproj.io/hook: PreSync,PostDelete
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 subjects:
 - kind: ServiceAccount
   name: hook-sa
@@ -51,7 +48,7 @@ roleRef:
   name: secret-manager
   apiGroup: rbac.authorization.k8s.io
 ---
-# The main hook job with both PreSync and PostDelete annotations
+# Simplified hook job with both PreSync and PostDelete annotations
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -59,16 +56,10 @@ metadata:
   namespace: hook-test
   annotations:
     argocd.argoproj.io/hook: PreSync,PostDelete
-    # This is critical - it ensures the job is removed after success
-    # so it can be recreated for the PostDelete phase
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    #argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
   ttlSecondsAfterFinished: 100
   template:
-    metadata:
-      annotations:
-        # This helps ensure the job pod gets a unique name each time
-        hook.argocd/phase: "{{env.PHASE}}"
     spec:
       serviceAccountName: hook-sa
       containers:
@@ -80,9 +71,28 @@ spec:
         - |
           echo "Running hook job..."
           
+          # Create a simple ConfigMap to log that this job ran
+          TIMESTAMP=$(date +%s)
+          JOB_POD_NAME=$(hostname)
+          
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: hook-execution-log-${TIMESTAMP}
+            namespace: hook-test
+          data:
+            pod: "${JOB_POD_NAME}"
+            timestamp: "${TIMESTAMP}"
+            message: "Dual-phase hook executed"
+          EOF
+          
           # Detect which phase we're in by checking for the existence of the secret
           if kubectl get secret test-secret -n hook-test --ignore-not-found; then
             echo "Secret exists - this is the PostDelete phase"
+            
+            # Add a label to the ConfigMap to indicate phase
+            kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=PostDelete
             
             # Clean up the secret
             echo "Cleaning up secret in PostDelete phase"
@@ -91,15 +101,15 @@ spec:
           else
             echo "Secret doesn't exist - this is the PreSync phase"
             
+            # Add a label to the ConfigMap to indicate phase
+            kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=PreSync
+            
             # Create the secret for the application
             echo "Creating secret in PreSync phase"
-            
-            # Create secret directly rather than using heredoc
             kubectl create secret generic test-secret \
               --namespace=hook-test \
               --from-literal=username=admin \
               --from-literal=password=t0p-s3cr3t
-              
             echo "Secret creation completed"
           fi
           
