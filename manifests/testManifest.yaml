@@ -13,7 +13,7 @@ metadata:
   name: hook-sa
   namespace: hook-test
   annotations:
-    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook: PreSync
 ---
 # Role for secret management in hook-test namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -22,7 +22,7 @@ metadata:
   name: secret-manager
   namespace: hook-test
   annotations:
-    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook: PreSync
 rules:
 - apiGroups: [""]
   resources: ["secrets", "configmaps"]
@@ -49,7 +49,7 @@ metadata:
   name: hook-sa-binding
   namespace: hook-test
   annotations:
-    argocd.argoproj.io/hook: PreSync,PostDelete
+    argocd.argoproj.io/hook: PreSync
 subjects:
 - kind: ServiceAccount
   name: hook-sa
@@ -74,15 +74,14 @@ roleRef:
   name: hook-test-tracker
   apiGroup: rbac.authorization.k8s.io
 ---
-# Simplified hook job with both PreSync and PostDelete annotations
+# PreSync hook job
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: dual-phase-hook
+  name: presync-hook
   namespace: hook-test
   annotations:
-    argocd.argoproj.io/hook: PreSync,PostDelete
-    #argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/hook: PreSync
 spec:
   ttlSecondsAfterFinished: 100
   template:
@@ -95,7 +94,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          echo "Running hook job..."
+          echo "Running PreSync hook job..."
           
           # Create a simple ConfigMap to log that this job ran
           TIMESTAMP=$(date +%s)
@@ -110,78 +109,62 @@ spec:
           data:
             pod: "${JOB_POD_NAME}"
             timestamp: "${TIMESTAMP}"
-            message: "Dual-phase hook executed"
+            message: "PreSync hook executed"
+            phase: "PreSync"
           EOF
           
-          # IMPROVED PHASE DETECTION:
-          # Check if the app deployment exists to determine phase more reliably
-          # For PreSync: Deployment shouldn't exist yet
-          # For PostDelete: Deployment should be gone or in terminating state
+          # Create the secret for the application
+          echo "Creating secret in PreSync phase"
+          kubectl create secret generic test-secret \
+            --namespace=hook-test \
+            --from-literal=username=admin \
+            --from-literal=password=t0p-s3cr3t
+          echo "Secret creation completed"
           
-          # First explicitly check for the deployment
-          DEPLOYMENT_OUTPUT=$(kubectl get deployment test-app -n hook-test -o name --ignore-not-found 2>/dev/null)
+          echo "PreSync hook job completed successfully!"
+      restartPolicy: Never
+  backoffLimit: 2
+---
+# PostDelete hook job - in the default namespace to avoid namespace deletion issues
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postdelete-hook
+  namespace: default  # Important: This job runs in default namespace
+  annotations:
+    argocd.argoproj.io/hook: PostDelete
+spec:
+  ttlSecondsAfterFinished: 600  # Longer TTL for inspection
+  template:
+    spec:
+      serviceAccountName: default  # Using default SA in default namespace
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Running PostDelete hook job..."
           
-          # Then check for the secret and capture its actual output
-          SECRET_OUTPUT=$(kubectl get secret test-secret -n hook-test -o name --ignore-not-found 2>/dev/null)
+          # Create a persistent marker in default namespace
+          echo "Creating persistent marker in default namespace..."
+          kubectl create configmap postdelete-executed \
+            --namespace=default \
+            --from-literal=time="$(date)" \
+            --from-literal=phase="PostDelete" \
+            --from-literal=app="hook-test" 
           
-          # Print debug information
-          echo "Deployment check output: '$DEPLOYMENT_OUTPUT'"
-          echo "Secret check output: '$SECRET_OUTPUT'"
+          # Optional: If we still need to clean up anything from the other namespace, try that
+          # This might fail if the namespace is already gone, which is fine
+          kubectl delete secret test-secret -n hook-test 2>/dev/null || true
           
-          if [ -z "$DEPLOYMENT_OUTPUT" ] && [ -z "$SECRET_OUTPUT" ]; then
-            # No deployment and no secret - this is PreSync
-            echo "Both deployment and secret are missing - this is the PreSync phase"
-            PHASE="PreSync"
-          elif [ -n "$DEPLOYMENT_OUTPUT" ] || [ -n "$SECRET_OUTPUT" ]; then
-            # Either deployment or secret exists - this is PostDelete
-            echo "Either deployment or secret exists - this is the PostDelete phase"
-            PHASE="PostDelete"
-          else
-            # This shouldn't happen, but default to PreSync
-            echo "Unable to determine phase - defaulting to PreSync"
-            PHASE="PreSync"
-          fi
+          # Sleep to give time for inspection
+          echo "PostDelete phase sleeping for 60 seconds to allow inspection..."
+          sleep 60
+          echo "Sleep completed"
           
-          echo "Detected phase: $PHASE"
-          
-          # Add a label to the ConfigMap to indicate phase
-          kubectl label configmap hook-execution-log-${TIMESTAMP} -n hook-test phase=${PHASE}
-          
-          # Execute appropriate phase actions
-          if [ "$PHASE" = "PreSync" ]; then
-            # Create the secret for the application
-            echo "Creating secret in PreSync phase"
-            kubectl create secret generic test-secret \
-              --namespace=hook-test \
-              --from-literal=username=admin \
-              --from-literal=password=t0p-s3cr3t
-            echo "Secret creation completed"
-          else
-            # Clean up the secret
-            echo "Cleaning up secret in PostDelete phase"
-            if [ -n "$SECRET_OUTPUT" ]; then
-              kubectl delete secret test-secret -n hook-test
-              echo "Secret deletion completed"
-            else
-              echo "Secret not found - nothing to delete"
-            fi
-            
-            # Create a persistent marker in default namespace
-            # This will survive the hook-test namespace deletion
-            echo "Creating persistent marker in default namespace..."
-            kubectl create configmap postdelete-executed \
-              --namespace=default \
-              --from-literal=time="$(date)" \
-              --from-literal=phase="PostDelete" \
-              --from-literal=app="hook-test" || true
-            
-            # Sleep to give time for inspection
-            echo "PostDelete phase sleeping for 60 seconds to allow inspection..."
-            sleep 60
-            echo "Sleep completed"
-          fi
-          
-          echo "Hook job completed successfully!"
+          echo "PostDelete hook job completed successfully!"
       restartPolicy: Never
   backoffLimit: 2
 ---
