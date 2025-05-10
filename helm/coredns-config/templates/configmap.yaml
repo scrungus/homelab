@@ -7,13 +7,13 @@ data:
   lab.server: |
     lab {
       hosts {
-        192.168.0.10 argocd.lab
-        192.168.0.10 qbittorrent.lab
-        192.168.0.10 grafana.lab
-        192.168.0.10 prometheus.lab
-        192.168.0.10 alertmanager.lab
-        192.168.0.10 plex.lab
-        192.168.0.10 registry.lab
+        100.66.242.14 argocd.lab
+        100.66.242.14 qbittorrent.lab
+        100.66.242.14 grafana.lab
+        100.66.242.14 prometheus.lab
+        100.66.242.14 alertmanager.lab
+        100.66.242.14 plex.lab
+        100.66.242.14 registry.lab
         fallthrough
       }
       forward . 8.8.8.8
