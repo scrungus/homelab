@@ -18,6 +18,10 @@ proxy:
           - jupyter.lab
         secretName: jupyterhub-tls
 
+prePuller:
+  hook:
+    enabled: false
+
 hub:
   image:
     name: jupyterhub/k8s-hub
