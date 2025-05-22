@@ -48,8 +48,6 @@ jupyterhub:
         nvidia.com/gpu: 1          # how many you let the pod *use*
       guarantees:
         nvidia.com/gpu: 1          # how many the scheduler must *reserve*
-    nodeSelector:
-      nvidia.com/gpu.present: "true"
     storage:
       type: dynamic
       homeMountPath: /home/jovyan
