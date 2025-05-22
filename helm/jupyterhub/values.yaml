@@ -34,20 +34,19 @@ jupyterhub:
   # --- single-user resources & GPU --------------
   singleuser:
     image:
-      name: nvcr.io/nvidia/pytorch
-      tag: 24.04-py3
+      name: quay.io/jupyter/pytorch-notebook
+      tag: cuda12-python-3.12
     memory:
-      limit: 8G
-      guarantee: 4G
+      limit: 16G
+      guarantee: 6G
     cpu:
-      limit: 4
-      guarantee: 1
-    # no "gpu:" section any more
+      limit: 8
+      guarantee: 2
     extraResource:
       limits:
-        nvidia.com/gpu: 1          # how many you let the pod *use*
+        nvidia.com/gpu: 1
       guarantees:
-        nvidia.com/gpu: 1          # how many the scheduler must *reserve*
+        nvidia.com/gpu: 1
     storage:
       type: dynamic
       homeMountPath: /home/jovyan
