@@ -11,11 +11,6 @@ spec:
     targetRevision: 0.17.1
     helm:
       values: |
-        nodeSelector:
-          nvidia.com/gpu.present: "true"
-        tolerations:
-          - key: "nvidia.com/gpu"
-            operator: "Exists"
         gfd:
           enabled: true
   destination:
