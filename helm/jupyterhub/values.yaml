@@ -19,8 +19,10 @@ proxy:
         secretName: jupyterhub-tls
 
 prePuller:
-  hook:
-    enabled: false
+    hook:
+      enabled: false
+    continuous:
+      enabled: false
 
 hub:
   image:
