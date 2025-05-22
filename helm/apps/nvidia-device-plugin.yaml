@@ -16,6 +16,8 @@ spec:
         tolerations:
           - key: "nvidia.com/gpu"
             operator: "Exists"
+        gfd:
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
