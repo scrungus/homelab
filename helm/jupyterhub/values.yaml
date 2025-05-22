@@ -1,54 +1,55 @@
-proxy:
-  secretToken: "202514bc356ab5cc5897de5897c63596626a9f05e1e758e7057ce821b9cc1add"
-  chp:
-    networkPolicy:
-      enabled: false           # homelab network is trusted
-  publicService:
-    annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  https:
-    enabled: true
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    hosts:
-      - jupyter.lab
-    tls:
-      - hosts:
-          - jupyter.lab
-        secretName: jupyterhub-tls
+jupyterhub:
+  proxy:
+    secretToken: "202514bc356ab5cc5897de5897c63596626a9f05e1e758e7057ce821b9cc1add"
+    chp:
+      networkPolicy:
+        enabled: false           # homelab network is trusted
+    publicService:
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    https:
+      enabled: true
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - jupyter.lab
+      tls:
+        - hosts:
+            - jupyter.lab
+          secretName: jupyterhub-tls
 
-prePuller:
+  prePuller:
     hook:
       enabled: false
     continuous:
       enabled: false
 
-hub:
-  image:
-    name: jupyterhub/k8s-hub
-  extraEnv:
-    TZ: Europe/London
+  hub:
+    image:
+      name: jupyterhub/k8s-hub
+    extraEnv:
+      TZ: Europe/London
 
-singleuser:
-  image:
-    name: nvcr.io/nvidia/pytorch
-    tag: 24.04-py3
-  memory:
-    limit: 8G
-    guarantee: 4G
-  cpu:
-    limit: 4
-    guarantee: 1
-  gpu:
-    limit: 1                     # exposes 1 RTX 4070 to the notebook
-  extraResource:
-    limits:
-      nvidia.com/gpu: 1
-    requests:
-      nvidia.com/gpu: 1
-  nodeSelector:
-    nvidia.com/gpu.present: "true"
-  storage:
-    type: dynamic
-    homeMountPath: /home/jovyan
+  singleuser:
+    image:
+      name: nvcr.io/nvidia/pytorch
+      tag: 24.04-py3
+    memory:
+      limit: 8G
+      guarantee: 4G
+    cpu:
+      limit: 4
+      guarantee: 1
+    gpu:
+      limit: 1                     # exposes 1 RTX 4070 to the notebook
+    extraResource:
+      limits:
+        nvidia.com/gpu: 1
+      requests:
+        nvidia.com/gpu: 1
+    nodeSelector:
+      nvidia.com/gpu.present: "true"
+    storage:
+      type: dynamic
+      homeMountPath: /home/jovyan
