@@ -15,6 +15,10 @@ environment:
   TZ: Etc/UTC
   VERSION: docker
 
+# Tailscale Funnel hostname for external access
+tailscale:
+  hostname: high-end-machine.tail6ed224.ts.net
+
 # Storage configuration
 persistence:
   config:

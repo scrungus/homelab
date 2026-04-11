@@ -22,3 +22,13 @@ spec:
                 name: plex-plex
                 port:
                   number: {{ .Values.service.port }}
+    - host: {{ .Values.tailscale.hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex-plex
+                port:
+                  number: {{ .Values.service.port }}
