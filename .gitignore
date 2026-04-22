@@ -1,0 +1,3 @@
+helm/*/charts/
+helm/*/Chart.lock
+codebase_dump.txt
