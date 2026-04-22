@@ -2,35 +2,38 @@ immich:
   image:
     tag: v2.6.3
 
-  # Shared across server, machine-learning, microservices components
-  controllers:
-    main:
-      containers:
-        main:
-          env:
-            DB_HOSTNAME: immich-database-rw
-            DB_DATABASE_NAME:
-              valueFrom:
-                secretKeyRef:
-                  name: immich-database-app
-                  key: dbname
-            DB_USERNAME:
-              valueFrom:
-                secretKeyRef:
-                  name: immich-database-app
-                  key: username
-            DB_PASSWORD:
-              valueFrom:
-                secretKeyRef:
-                  name: immich-database-app
-                  key: password
-            DB_VECTOR_EXTENSION: vchord
-
   # Chart-level settings from the upstream immich chart
   immich:
     persistence:
       library:
         existingClaim: immich-library
+
+  # DB env vars scoped to the server only (valkey/ML don't need them,
+  # and inheriting them here would make their pods fail until the
+  # CNPG-generated secret exists).
+  server:
+    controllers:
+      main:
+        containers:
+          main:
+            env:
+              DB_HOSTNAME: immich-database-rw
+              DB_DATABASE_NAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-database-app
+                    key: dbname
+              DB_USERNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-database-app
+                    key: username
+              DB_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: immich-database-app
+                    key: password
+              DB_VECTOR_EXTENSION: vchord
 
   valkey:
     enabled: true
