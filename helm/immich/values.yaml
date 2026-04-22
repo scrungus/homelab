@@ -33,7 +33,6 @@ immich:
                   secretKeyRef:
                     name: immich-database-app
                     key: password
-              DB_VECTOR_EXTENSION: vchord
 
   valkey:
     enabled: true
