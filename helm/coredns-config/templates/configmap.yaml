@@ -15,6 +15,7 @@ data:
         100.66.242.14 plex.lab
         100.66.242.14 registry.lab
         100.66.242.14 jupyter.lab
+        100.66.242.14 immich.lab
         fallthrough
       }
       forward . 8.8.8.8
