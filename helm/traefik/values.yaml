@@ -4,6 +4,9 @@ traefik:
     - "--providers.kubernetesingress.allowexternalnameservices=true"
     - "--providers.kubernetescrd.allowexternalnameservices=true"
     - "--serversTransport.insecureSkipVerify=true"
+    - "--entryPoints.websecure.transport.respondingTimeouts.readTimeout=600s"
+    - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=600s"
+    - "--entryPoints.websecure.transport.respondingTimeouts.idleTimeout=600s"
   ports:
     websecure:
       tls:
