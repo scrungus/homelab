@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: media-hooks
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/scrungus/homelab.git
+    targetRevision: HEAD
+    path: helm/media-hooks
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: media-hooks
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: media-hooks-app
+  namespace: media-hooks
+data:
+  router.py: |
+    #!/usr/bin/env python3
+    """media-hooks: fan a single 'download finished' event out to every media
+    server. Standard library only, so it runs in a stock python:slim image with
+    nothing to build.
+
+    Endpoints:
+      GET  /healthz              -> liveness
+      POST /complete             -> body {"name","category","content_path"}
+                                    triggers a scan on Plex + Jellyfin
+      GET  /trigger?category=tv  -> same, for manual backfill / testing
+    """
+    import json
+    import os
+    import sys
+    import urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from urllib.parse import urlparse, parse_qs
+
+    PLEX_URL = os.environ.get("PLEX_URL", "").rstrip("/")
+    PLEX_TOKEN = os.environ.get("PLEX_TOKEN", "")
+    JELLYFIN_URL = os.environ.get("JELLYFIN_URL", "").rstrip("/")
+    JELLYFIN_TOKEN = os.environ.get("JELLYFIN_TOKEN", "")
+    PORT = int(os.environ.get("PORT", "8080"))
+
+    # qBittorrent category -> Plex library section id (pulled from this Plex
+    # server's /library/sections). Jellyfin has no cheap per-library scan API,
+    # so it gets a single incremental library refresh regardless of category.
+    CATEGORY_TO_PLEX_SECTION = {
+        "tv": "3",
+        "movies": "2",
+        "anime": "1",
+        "animefilms": "4",
+        "documentaries": "7",
+        "shortfilms": "5",
+        "music": "6",
+    }
+
+    def log(msg):
+        print("[media-hooks] " + msg, flush=True)
+
+    def _get(url, headers=None, timeout=15):
+        req = urllib.request.Request(url, headers=headers or {}, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status
+
+    def _post(url, headers=None, timeout=15):
+        req = urllib.request.Request(url, data=b"", headers=headers or {}, method="POST")
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status
+
+    def scan_plex(category):
+        if not PLEX_URL or not PLEX_TOKEN:
+            log("plex: skipped (PLEX_URL/PLEX_TOKEN not set)")
+            return
+        section = CATEGORY_TO_PLEX_SECTION.get(category)
+        if not section:
+            log("plex: no section mapped for category '" + str(category) + "', refreshing nothing")
+            return
+        url = PLEX_URL + "/library/sections/" + section + "/refresh?X-Plex-Token=" + PLEX_TOKEN
+        try:
+            status = _get(url)
+            log("plex: section " + section + " refresh -> HTTP " + str(status))
+        except Exception as e:
+            log("plex: refresh FAILED -> " + repr(e))
+
+    def scan_jellyfin(category):
+        if not JELLYFIN_URL or not JELLYFIN_TOKEN:
+            log("jellyfin: skipped (JELLYFIN_URL/JELLYFIN_TOKEN not set)")
+            return
+        url = JELLYFIN_URL + "/Library/Refresh"
+        try:
+            status = _post(url, headers={"X-Emby-Token": JELLYFIN_TOKEN})
+            log("jellyfin: library refresh -> HTTP " + str(status))
+        except Exception as e:
+            log("jellyfin: refresh FAILED -> " + repr(e))
+
+    def handle_event(name, category, content_path):
+        log("event: name='" + str(name) + "' category='" + str(category) + "' path='" + str(content_path) + "'")
+        scan_plex(category)
+        scan_jellyfin(category)
+
+    class Handler(BaseHTTPRequestHandler):
+        def _reply(self, code, obj):
+            body = json.dumps(obj).encode()
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):
+            pass  # we do our own logging
+
+        def do_GET(self):
+            parsed = urlparse(self.path)
+            if parsed.path == "/healthz":
+                return self._reply(200, {"ok": True})
+            if parsed.path == "/trigger":
+                q = parse_qs(parsed.query)
+                category = (q.get("category") or [""])[0]
+                handle_event(q.get("name", [""])[0], category, q.get("content_path", [""])[0])
+                return self._reply(200, {"triggered": category})
+            return self._reply(404, {"error": "not found"})
+
+        def do_POST(self):
+            parsed = urlparse(self.path)
+            if parsed.path != "/complete":
+                return self._reply(404, {"error": "not found"})
+            length = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(length) if length else b"{}"
+            try:
+                data = json.loads(raw.decode() or "{}")
+            except Exception:
+                data = {}
+            handle_event(data.get("name", ""), data.get("category", ""), data.get("content_path", ""))
+            return self._reply(200, {"accepted": True})
+
+    def main():
+        log("starting on :" + str(PORT))
+        log("plex=" + (PLEX_URL or "<unset>") + " token=" + ("set" if PLEX_TOKEN else "unset"))
+        log("jellyfin=" + (JELLYFIN_URL or "<unset>") + " token=" + ("set" if JELLYFIN_TOKEN else "unset"))
+        ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+
+    if __name__ == "__main__":
+        sys.exit(main())

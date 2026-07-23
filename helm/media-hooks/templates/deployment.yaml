@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-hooks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-hooks
+  template:
+    metadata:
+      labels:
+        app: media-hooks
+      annotations:
+        # roll the pod when the router source changes
+        checksum/app: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: media-hooks
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["python", "/app/router.py"]
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: PORT
+              value: "8080"
+            - name: PLEX_URL
+              value: {{ .Values.plex.url | quote }}
+            - name: JELLYFIN_URL
+              value: {{ .Values.jellyfin.url | quote }}
+            - name: PLEX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: PLEX_TOKEN
+                  optional: true
+            - name: JELLYFIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: JELLYFIN_TOKEN
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          volumeMounts:
+            - name: app
+              mountPath: /app
+      volumes:
+        - name: app
+          configMap:
+            name: media-hooks-app

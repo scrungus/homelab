@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qbittorrent-hooks
+  namespace: qbittorrent
+data:
+  # Runs (as an initContainer) before qBittorrent starts, so the whole
+  # auto-file-into-library behaviour is declared in git and survives a fresh
+  # PVC — nothing is clicked in the WebUI.
+  init.sh: |
+    #!/bin/sh
+    set -eu
+    CONF_DIR="/config/qBittorrent"
+    CONF="$CONF_DIR/qBittorrent.conf"
+    CATS="$CONF_DIR/categories.json"
+    PROG='/bin/sh /hooks/on_complete.sh "%L"'
+    PUID="${PUID:-1000}"
+    PGID="${PGID:-1000}"
+
+    mkdir -p "$CONF_DIR"
+    if [ ! -f "$CONF" ]; then
+      printf '[AutoRun]\nenabled=true\nprogram=%s\n' "$PROG" > "$CONF"
+    fi
+
+    # Idempotently set key=value inside an INI section (literal key compare so
+    # qBittorrent's backslash keys are handled correctly).
+    setini() {
+      f="$1"; sec="$2"; key="$3"; val="$4"
+      awk -v sec="$sec" -v key="$key" -v val="$val" '
+        BEGIN { insec=0; done=0 }
+        /^\[.*\]$/ {
+          if (insec && !done) { print key "=" val; done=1 }
+          insec = ($0 == "[" sec "]")
+          print; next
+        }
+        {
+          p = index($0, "=")
+          k = (p>0) ? substr($0, 1, p-1) : ""
+          if (insec && k == key) { print key "=" val; done=1; next }
+          print
+        }
+        END { if (insec && !done) print key "=" val }
+      ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    }
+
+    # AutoRun -> fire the completion hook when any torrent finishes.
+    grep -q '^\[AutoRun\]$' "$CONF" || printf '\n[AutoRun]\n' >> "$CONF"
+    setini "$CONF" "AutoRun" "enabled" "true"
+    setini "$CONF" "AutoRun" "program" "$PROG"
+
+    # Automatic Torrent Management on by default, so selecting a category
+    # actually relocates the finished download into that category's save path.
+    grep -q '^\[BitTorrent\]$' "$CONF" || printf '\n[BitTorrent]\n' >> "$CONF"
+    if grep -q '^Session\\DisableAutoTMMByDefault=' "$CONF"; then
+      sed -i 's/^Session\\DisableAutoTMMByDefault=.*/Session\\DisableAutoTMMByDefault=false/' "$CONF"
+    else
+      sed -i '/^\[BitTorrent\]$/a Session\\DisableAutoTMMByDefault=false' "$CONF"
+    fi
+
+    # Seed the library categories once; never clobber user-managed categories.
+    if [ ! -f "$CATS" ] || ! grep -q 'save_path' "$CATS"; then
+      cat > "$CATS" <<'JSON'
+    {
+        "anime": { "save_path": "/media/Anime" },
+        "animefilms": { "save_path": "/media/AnimeFilms" },
+        "documentaries": { "save_path": "/media/Documentaries" },
+        "movies": { "save_path": "/media/Movies" },
+        "music": { "save_path": "/media/Music" },
+        "shortfilms": { "save_path": "/media/ShortFilms" },
+        "tv": { "save_path": "/media/TVSeries" }
+    }
+    JSON
+    fi
+
+    chown "$PUID:$PGID" "$CONF" "$CATS" 2>/dev/null || true
+    echo "[qbit-init] AutoRun + AutoTMM + categories configured"
+
+  # Invoked by qBittorrent on torrent completion with $1 = category (%L).
+  # Uses busybox wget (GET) so it needs no curl and no POST support.
+  on_complete.sh: |
+    #!/bin/sh
+    CAT="${1:-uncategorized}"
+    URL="http://media-hooks.media-hooks.svc.cluster.local:8080/trigger?category=${CAT}"
+    wget -q -T 20 -O - "$URL" >/dev/null 2>&1 || true

@@ -13,6 +13,23 @@ spec:
       values: |
         gfd:
           enabled: true
+        # Time-slice the single RTX 4070 so it advertises 4 schedulable
+        # nvidia.com/gpu units instead of 1. Without this, a long-running
+        # Jellyfin pod holding nvidia.com/gpu:1 would permanently reserve the
+        # only GPU and leave JupyterHub GPU notebooks Pending forever.
+        # Trade-off: slices share VRAM with no hard isolation (fine for a
+        # single-user homelab; a heavy training job + a 4K transcode could
+        # still contend for the 12GB).
+        config:
+          default: shared
+          map:
+            shared: |-
+              version: v1
+              sharing:
+                timeSlicing:
+                  resources:
+                    - name: nvidia.com/gpu
+                      replicas: 4
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system

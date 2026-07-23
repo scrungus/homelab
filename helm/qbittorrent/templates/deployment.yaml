@@ -12,6 +12,29 @@ spec:
       labels:
         app: qbittorrent
     spec:
+      initContainers:
+      # Declaratively configure AutoRun + AutoTMM + library categories before
+      # qBittorrent starts, so the auto-file-into-library behaviour lives in git
+      # rather than in WebUI clicks.
+      - name: config-init
+        image: busybox:1.36
+        command: ["sh", "/hooks-src/init.sh"]
+        env:
+          - name: PUID
+            valueFrom:
+              secretKeyRef:
+                name: user-id-secret
+                key: USER_ID
+          - name: PGID
+            valueFrom:
+              secretKeyRef:
+                name: user-id-secret
+                key: USER_ID
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: hooks
+          mountPath: /hooks-src
       containers:
       - name: qbittorrent
         image: lscr.io/linuxserver/qbittorrent:latest
@@ -43,6 +66,10 @@ spec:
           mountPath: /config
         - name: downloads
           mountPath: /downloads
+        - name: media
+          mountPath: /media
+        - name: hooks
+          mountPath: /hooks
       volumes:
       - name: config
         persistentVolumeClaim:
@@ -50,3 +77,12 @@ spec:
       - name: downloads
         persistentVolumeClaim:
           claimName: qbittorrent-downloads
+      # The library root, so a completed torrent in category "tv" lands in
+      # /media/TVSeries (= /tank/Media/TVSeries), the same dir Plex/Jellyfin read.
+      - name: media
+        hostPath:
+          path: /tank/Media
+      - name: hooks
+        configMap:
+          name: qbittorrent-hooks
+          defaultMode: 0755

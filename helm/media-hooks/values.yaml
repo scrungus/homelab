@@ -1,0 +1,27 @@
+# media-hooks: a tiny, dependency-free event router for the media pipeline.
+#
+# qBittorrent fires a completion hook -> this service -> targeted library scans
+# on every media server at once. Decoupled on purpose: qBittorrent knows only
+# "a download in category X finished"; the routing table lives here, so adding
+# a third consumer (a notification, Immich, an Arr) is a one-line change and
+# never touches the downloader.
+
+image:
+  # Stock Python; the app is mounted from a ConfigMap, so there is nothing to
+  # build or push to registry.lab.
+  repository: python
+  tag: "3.12-slim"
+
+service:
+  port: 8080
+
+plex:
+  url: http://plex-plex.plex.svc.cluster.local:32400
+
+jellyfin:
+  url: http://jellyfin.jellyfin.svc.cluster.local:8096
+
+# Name of the Secret holding PLEX_TOKEN / JELLYFIN_TOKEN. Created out-of-band
+# (see helm/media-hooks/README.md) so real tokens never live in git and ArgoCD
+# self-heal never clobbers them.
+secretName: media-hooks-secrets

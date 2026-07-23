@@ -1,0 +1,6 @@
+apiVersion: v2
+name: media-hooks
+description: Event router that fans qBittorrent completion events out to Plex + Jellyfin (and anything else you add)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,33 @@
+# Default values for Jellyfin
+image:
+  repository: lscr.io/linuxserver/jellyfin
+  tag: latest
+  pullPolicy: Always
+
+service:
+  port: 8096
+
+environment:
+  TZ: Etc/UTC
+
+# Request one GPU slice for NVENC/NVDEC hardware transcoding.
+# Requires GPU time-slicing on the nvidia-device-plugin (see
+# helm/apps/nvidia-device-plugin.yaml) so this long-running pod does not
+# monopolise the single physical 4070 and starve JupyterHub.
+gpu:
+  enabled: true
+
+# Media libraries are the SAME host directories Plex mounts, mounted read-only
+# here — Jellyfin only ever reads; qBittorrent is the sole writer.
+persistence:
+  config:
+    path: /appdata/jellyfin
+  media:
+    anime:          { path: /tank/Media/Anime }
+    animeFilms:     { path: /tank/Media/AnimeFilms }
+    homeMedia:      { path: /tank/Media/HomeMedia }
+    movies:         { path: /tank/Media/Movies }
+    music:          { path: /tank/Media/Music }
+    shortFilms:     { path: /tank/Media/ShortFilms }
+    tvSeries:       { path: /tank/Media/TVSeries }
+    documentaries:  { path: /tank/Media/Documentaries }
