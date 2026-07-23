@@ -4,6 +4,12 @@ metadata:
   name: qbittorrent
 spec:
   replicas: 1
+  # Recreate (not RollingUpdate): the config lives on a single-node RWO/hostPath
+  # volume, so an old and new pod must never overlap — otherwise the terminating
+  # old qBittorrent writes its in-memory config back to disk and clobbers the
+  # config-init edits (AutoRun/AutoTMM) the new pod just made.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: qbittorrent

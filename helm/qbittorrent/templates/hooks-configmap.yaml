@@ -13,7 +13,7 @@ data:
     CONF_DIR="/config/qBittorrent"
     CONF="$CONF_DIR/qBittorrent.conf"
     CATS="$CONF_DIR/categories.json"
-    PROG='/bin/sh /hooks/on_complete.sh "%L"'
+    PROG='/bin/sh /hooks/on_complete.sh %L'
     PUID="${PUID:-1000}"
     PGID="${PGID:-1000}"
 
