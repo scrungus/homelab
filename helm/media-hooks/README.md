@@ -20,9 +20,14 @@ The app is pure Python stdlib, mounted from a ConfigMap into a stock
 
 The Deployment reads `PLEX_TOKEN` / `JELLYFIN_TOKEN` from the Secret
 `media-hooks-secrets` (both marked `optional`, so the pod runs without them and
-simply skips whichever server has no token). Create/update it directly — it is
-intentionally **not** managed by ArgoCD so real tokens stay out of the repo and
-self-heal never clobbers them:
+simply skips whichever server has no token). It is intentionally **not** managed
+by ArgoCD so real tokens stay out of the repo and self-heal never clobbers them.
+
+> This secret has already been populated on the live cluster (Plex token pulled
+> from Plex's `Preferences.xml`, Jellyfin key minted during Jellyfin first-run
+> setup). The commands below are for **recreating** it if it is ever lost. After
+> editing the secret, cycle the pod with `kubectl -n media-hooks delete pod -l
+> app=media-hooks` — a `rollout restart` gets reverted by ArgoCD self-heal.
 
 ```sh
 # Plex: Settings ▸ (any item) ▸ Get Info ▸ View XML — copy the X-Plex-Token
