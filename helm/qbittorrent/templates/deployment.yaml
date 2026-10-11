@@ -72,6 +72,8 @@ spec:
           mountPath: /config
         - name: downloads
           mountPath: /downloads
+        - name: local-downloads
+          mountPath: /local-downloads
         - name: media
           mountPath: /media
         - name: hooks
@@ -83,6 +85,9 @@ spec:
       - name: downloads
         persistentVolumeClaim:
           claimName: qbittorrent-downloads
+      - name: local-downloads
+        persistentVolumeClaim:
+          claimName: qbittorrent-local-downloads
       # The library root, so a completed torrent in category "tv" lands in
       # /media/TVSeries (= /tank/Media/TVSeries), the same dir Plex/Jellyfin read.
       - name: media
