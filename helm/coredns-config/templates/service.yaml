@@ -4,6 +4,10 @@ metadata:
   name: coredns-custom
 spec:
   type: NodePort
+  # Let Tailscale nameservers use the normal DNS port without changing
+  # the existing NodePort used by manually configured clients.
+  externalIPs:
+    - 100.66.242.14
   ports:
     - name: dns
       port: 53
