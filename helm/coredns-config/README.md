@@ -12,6 +12,11 @@ The external IP is the Tailscale address already assigned to `scrungus-beast`.
 Kube-proxy routes traffic on that address; no new host listener or LoadBalancer
 is needed on the current k3s cluster.
 
+The `staging.mama.lab`, `admin.mama.lab`, and `commerce.mama.lab` records point
+to Mama's TrueNAS server at `100.95.146.90`, rather than the homelab ingress.
+Their HTTP ports are 3000, 3001, and 9002 respectively. Their app configuration
+is managed in `scrungus/mamas-cloud`.
+
 ## Automatic client DNS
 
 In the Tailscale admin console's **DNS** page, add a custom nameserver with

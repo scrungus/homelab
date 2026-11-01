@@ -74,6 +74,9 @@ annotate its `Application` with `argocd.argoproj.io/sync-wave: "-1"`.
 - `*.lab` hostnames resolve via the `coredns-custom` ConfigMap
   (`helm/coredns-config/templates/configmap.yaml`) — additions to that file
   are the *only* DNS changes needed; no external record updates.
+- `staging.mama.lab`, `admin.mama.lab`, and `commerce.mama.lab` point directly
+  to Mama's TrueNAS Tailscale IP `100.95.146.90` (ports 3000, 3001, and 9002).
+  These apps are managed by `scrungus/mamas-cloud`, not this cluster's ingress.
 - TLS is self-signed via an internal `homelab-issuer` `ClusterIssuer` rooted
   at `root-ca` (`helm/cert-manager/templates/issuers/`). Browsers and most
   clients will warn; `curl` needs `-k`; `kubectl` is unaffected.
