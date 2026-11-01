@@ -29,6 +29,9 @@ metadata:
   name: {{ .name }}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
+    {{- if .rootRedirect }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ printf "%s-%s-root@kubernetescrd" $.Release.Namespace .name | quote }}
+    {{- end }}
 spec:
   ingressClassName: traefik
   rules:
@@ -42,4 +45,16 @@ spec:
                 name: {{ .name }}
                 port:
                   name: http
+{{- if .rootRedirect }}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .name }}-root
+spec:
+  redirectRegex:
+    regex: '^http://([^/]+)/?$'
+    replacement: {{ printf "http://${1}%s" .rootRedirect | quote }}
+    permanent: false
+{{- end }}
 {{- end }}

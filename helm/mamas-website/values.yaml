@@ -9,3 +9,4 @@ apps:
   - name: commerce
     host: commerce.mama.lab
     port: 9002
+    rootRedirect: /app
