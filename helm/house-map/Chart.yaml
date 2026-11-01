@@ -1,0 +1,5 @@
+apiVersion: v2
+name: house-map
+description: Private HTTP route to the House Map static app on TrueNAS
+type: application
+version: 0.1.0

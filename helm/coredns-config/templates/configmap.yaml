@@ -20,6 +20,7 @@ data:
         100.66.242.14 staging.mama.lab
         100.66.242.14 admin.mama.lab
         100.66.242.14 commerce.mama.lab
+        100.66.242.14 house.mama.lab
         fallthrough
       }
       forward . 8.8.8.8
