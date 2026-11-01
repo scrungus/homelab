@@ -1,0 +1,4 @@
+apiVersion: v2
+name: mamas-website
+description: Private HTTP routes to Mama's TrueNAS website services
+version: 0.1.0

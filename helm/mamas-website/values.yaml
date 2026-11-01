@@ -1,0 +1,11 @@
+truenasAddress: 100.95.146.90
+apps:
+  - name: staging
+    host: staging.mama.lab
+    port: 3000
+  - name: admin
+    host: admin.mama.lab
+    port: 3001
+  - name: commerce
+    host: commerce.mama.lab
+    port: 9002
