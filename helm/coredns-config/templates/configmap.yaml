@@ -17,9 +17,9 @@ data:
         100.66.242.14 registry.lab
         100.66.242.14 jupyter.lab
         100.66.242.14 immich.lab
-        100.95.146.90 staging.mama.lab
-        100.95.146.90 admin.mama.lab
-        100.95.146.90 commerce.mama.lab
+        100.66.242.14 staging.mama.lab
+        100.66.242.14 admin.mama.lab
+        100.66.242.14 commerce.mama.lab
         fallthrough
       }
       forward . 8.8.8.8
